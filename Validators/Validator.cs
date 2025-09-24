@@ -43,7 +43,7 @@ namespace HW12.Validators
         private int UsernameCount(string username)
         {
             var users = _userRepo.GetAll();
-            return users.Count(u => u.UserName == username);
+            return users.Count(u => u.Username == username);
 
         }
     }
