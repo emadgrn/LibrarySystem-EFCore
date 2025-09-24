@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HW12.Interfaces.Validators
 {
-    interface IValidator
+    public interface IValidator
     {
         bool UsernameValidator(string username);
         bool PasswordValidator(string password);
