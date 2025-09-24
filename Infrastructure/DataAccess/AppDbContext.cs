@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HW12.Entities;
 
-namespace HW12.Infrastructure
+namespace HW12.Infrastructure.DataAccess
 {
     public class AppDbContext:DbContext
     {
