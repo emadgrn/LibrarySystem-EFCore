@@ -40,7 +40,7 @@ namespace HW12.Infrastructure.Repositories
         {
             var model = GetById(borrowedBook.Id);
 
-            model.BorrowedDate = borrowedBook.BorrowedDate;
+            model.BorrowingDateTime = borrowedBook.BorrowingDateTime;
             _dbContext.SaveChanges();
         }
 

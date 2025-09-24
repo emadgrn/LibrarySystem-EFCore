@@ -43,6 +43,7 @@ namespace HW12.Infrastructure.Repositories
 
             model.Title = book.Title;
             model.Author = book.Author;
+            model.IsBorrowed = book.IsBorrowed;
             _dbContext.SaveChanges();
         }
 
