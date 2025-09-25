@@ -17,6 +17,7 @@ namespace HW12.Entities
         public bool IsActive { get; set; }
         public RoleEnum Role { get; set; }
         public List<BorrowedBook> BorrowedBooks { get; set; } = [];
+        public List<Review> Reviews { get; set; } = [];
 
         public bool ConfirmPassword(string password)
         {

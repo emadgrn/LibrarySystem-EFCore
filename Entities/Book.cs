@@ -14,6 +14,7 @@ namespace HW12.Entities
         public bool IsBorrowed { get; set; }
         public Category Category { get; set; }
         public int CategoryId { get; set; }
+        public List<Review> Reviews { get; set; } = [];
 
     }
 }

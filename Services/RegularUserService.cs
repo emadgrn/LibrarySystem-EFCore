@@ -11,14 +11,28 @@ using HW12.Interfaces.Services;
 
 namespace HW12.Services
 {
-    public class RegularUserService(IUserRepository userRepo, IBorrowedBookRepository borrowedBookRepo, IBookRepository bookRepo, ICategoryRepository categoryRepo):IRegularUserService
+    public class RegularUserService(IUserRepository userRepo, IBorrowedBookRepository borrowedBookRepo, IBookRepository bookRepo, ICategoryRepository categoryRepo, IReviewRepository reviewRepo) : IRegularUserService
     {
         private readonly IUserRepository _userRepo = userRepo;
         private readonly IBorrowedBookRepository _borrowedBookRepo = borrowedBookRepo;
         private readonly IBookRepository _bookRepo = bookRepo;
         private readonly ICategoryRepository _categoryRepo = categoryRepo;
+        private readonly IReviewRepository _reviewRepo = reviewRepo;
 
 
+        public ShowUserDto ShowProfile(int userId)
+        {
+            var user= _userRepo.GetById(userId);
+
+            return new ShowUserDto
+            {
+                Id = user.Id,
+                FullName = user.FirstName + " " + user.LastName,
+                Username = user.Username,
+                IsActive = user.IsActive,
+                Role = user.Role
+            };
+        }
         public List<ShowBookDto> ListOfBooks()
         {
             return _bookRepo.GetAll()
@@ -31,7 +45,39 @@ namespace HW12.Services
                 })
                 .ToList();
         }
+        public ShowBookDto ShowCompleteInfoOfBook(int bookId)
+        {
+            var book = _bookRepo.GetAll().FirstOrDefault(b => b.Id == bookId);
+            if (book == null)
+                throw new Exception($"Book with ID {bookId} is not found");
 
+            var approvedReviews = book.Reviews
+                .Where(r => r.IsApproved)
+                .Select(r => new ShowReviewInBookDto
+                {
+                    UserId = r.UserId,
+                    UserFullName = r.User.FirstName + " " + r.User.LastName,
+                    Comment = r.Comment,
+                    Rating = r.Rating
+                })
+                .ToList();
+
+            double avgRating = approvedReviews.Any()
+                ? approvedReviews.Average(r => r.Rating)
+                : 0;
+
+            var dto = new ShowBookDto
+            {
+                Id = book.Id,
+                Title = book.Title,
+                Author = book.Author,
+                CategoryName = book.Category.Name,
+                ApprovedReviews = approvedReviews,
+                AverageRating = avgRating
+            };
+
+            return dto;
+        }
         public List<ShowCategoryDto> ListOfCategories()
         {
             return _categoryRepo.GetAll()
@@ -47,8 +93,7 @@ namespace HW12.Services
                 })
                 .ToList();
         }
-
-        public List<ShowBorrowedBookDto> ListOfBorrowedBooksByUserId(int userId)
+        public List<ShowBorrowedBookDto> ListOfBorrowedBooksByUser(int userId)
         {
             return _borrowedBookRepo.GetAll()
                 .Where(bb => bb.UserId == userId)
@@ -64,8 +109,23 @@ namespace HW12.Services
                 })
                 .ToList();
         }
-
-        public int BorrowBook(int userId,int bookId)
+        public List<ShowReviewDto> ListOfReviewsByUser(int userId)
+        {
+            return _reviewRepo.GetAll()
+                .Where(r => r.UserId == userId)
+                .Select(r => new ShowReviewDto
+                {
+                    UserId = r.UserId,
+                    UserFullName = r.User.FirstName + " " + r.User.LastName,
+                    BookId = r.BookId,
+                    BookTitle = r.Book.Title,
+                    Comment = r.Comment,
+                    Rating = r.Rating,
+                    IsApproved = r.IsApproved
+                })
+                .ToList();
+        }
+        public int BorrowBook(int userId, int bookId)
         {
             var book = _bookRepo.GetById(bookId);
 
@@ -85,6 +145,47 @@ namespace HW12.Services
             _bookRepo.Update(book);
 
             return borrowedBookId;
+        }
+        public int CreateReview(int userId, int bookId, int rating, string comment)
+        {
+            var book = _bookRepo.GetById(bookId);
+
+            if (rating < 1 || rating > 5)
+                throw new Exception("Rating must be between 1 and 5.");
+
+            var review = new Review
+            {
+                UserId = userId,
+                BookId = bookId,
+                Rating = rating,
+                Comment = comment,
+                CreatedAt = DateTime.Now,
+                IsApproved = false
+            };
+            return _reviewRepo.Create(review);
+        }
+        public bool EditReviewComment(int userId, int reviewId, string comment)
+        {
+            var review = _reviewRepo.GetById(reviewId);
+
+            if (review.UserId != userId)
+                throw new Exception("You can only edit your own reviews!");
+
+            review.Comment = comment;
+            _reviewRepo.Update(review);
+
+            return true;
+        }
+        public bool DeleteReview(int userId, int reviewId)
+        {
+            var review = _reviewRepo.GetById(reviewId);
+
+            if (review.UserId != userId)
+                throw new Exception("You can only delete your own reviews!");
+
+            _reviewRepo.Delete(reviewId);
+
+            return true;
         }
     }
 }

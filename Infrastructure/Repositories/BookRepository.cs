@@ -35,7 +35,11 @@ namespace HW12.Infrastructure.Repositories
 
         public List<Book> GetAll()
         {
-            return _dbContext.Books.Include(b=>b.Category).ToList();
+            return _dbContext.Books
+                .Include(b=>b.Category)
+                .Include(b => b.Reviews)
+                .ThenInclude(r => r.User)
+                .ToList();
         }
 
         public void Update(Book book)
