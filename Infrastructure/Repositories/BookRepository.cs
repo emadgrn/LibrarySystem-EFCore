@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HW12.Entities;
 using HW12.Infrastructure.DataAccess;
 using HW12.Interfaces.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace HW12.Infrastructure.Repositories
 {
@@ -27,14 +28,14 @@ namespace HW12.Infrastructure.Repositories
             var book = _dbContext.Books.FirstOrDefault(x => x.Id == id);
 
             if (book is null)
-                throw new Exception($"Book with Id {id} is not found");
+                throw new Exception($"Book with ID {id} is not found");
 
             return book;
         }
 
         public List<Book> GetAll()
         {
-            return _dbContext.Books.ToList();
+            return _dbContext.Books.Include(b=>b.Category).ToList();
         }
 
         public void Update(Book book)

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace HW12.Infrastructure.Repositories
 {
@@ -26,14 +27,14 @@ namespace HW12.Infrastructure.Repositories
             var category = _dbContext.Categories.FirstOrDefault(x => x.Id == id);
 
             if (category is null)
-                throw new Exception($"Category with Id {id} is not found");
+                throw new Exception($"Category with ID {id} is not found");
 
             return category;
         }
 
         public List<Category> GetAll()
         {
-            return _dbContext.Categories.ToList();
+            return _dbContext.Categories.Include(c=>c.Books).ToList();
         }
 
         public void Update(Category category)

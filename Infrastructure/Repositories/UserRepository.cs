@@ -26,7 +26,7 @@ namespace HW12.Infrastructure.Repositories
             var user = _dbContext.Users.FirstOrDefault(x => x.Id == id);
 
             if (user is null)
-                throw new Exception($"User with Id {id} is not found");
+                throw new Exception($"User with ID {id} is not found");
 
             return user;
         }
