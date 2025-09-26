@@ -8,18 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HW12.Interfaces.Services;
+using HW12.Infrastructure;
 
 namespace HW12.Services
 {
-    public class RegularUserService(IUserRepository userRepo, IBorrowedBookRepository borrowedBookRepo, IBookRepository bookRepo, ICategoryRepository categoryRepo, IReviewRepository reviewRepo) : IRegularUserService
+    public class RegularUserService(IUserRepository _userRepo, IBorrowedBookRepository _borrowedBookRepo, IBookRepository _bookRepo, ICategoryRepository _categoryRepo, IReviewRepository _reviewRepo, UnitOfWork _unitOfWork) : IRegularUserService
     {
-        private readonly IUserRepository _userRepo = userRepo;
-        private readonly IBorrowedBookRepository _borrowedBookRepo = borrowedBookRepo;
-        private readonly IBookRepository _bookRepo = bookRepo;
-        private readonly ICategoryRepository _categoryRepo = categoryRepo;
-        private readonly IReviewRepository _reviewRepo = reviewRepo;
-
-
         public ShowUserDto ShowProfile(int userId)
         {
             var user= _userRepo.GetById(userId);
@@ -47,9 +41,7 @@ namespace HW12.Services
         }
         public ShowBookDto ShowCompleteInfoOfBook(int bookId)
         {
-            var book = _bookRepo.GetAll().FirstOrDefault(b => b.Id == bookId);
-            if (book == null)
-                throw new Exception($"Book with ID {bookId} is not found");
+            var book=_bookRepo.GetById(bookId);
 
             var approvedReviews = book.Reviews
                 .Where(r => r.IsApproved)
@@ -115,6 +107,7 @@ namespace HW12.Services
                 .Where(r => r.UserId == userId)
                 .Select(r => new ShowReviewDto
                 {
+                    ReviewId = r.Id,
                     UserId = r.UserId,
                     UserFullName = r.User.FirstName + " " + r.User.LastName,
                     BookId = r.BookId,
@@ -143,6 +136,7 @@ namespace HW12.Services
 
             book.IsBorrowed = true;
             _bookRepo.Update(book);
+            _unitOfWork.Save();
 
             return borrowedBookId;
         }
@@ -162,7 +156,11 @@ namespace HW12.Services
                 CreatedAt = DateTime.Now,
                 IsApproved = false
             };
-            return _reviewRepo.Create(review);
+
+            int reviewId=_reviewRepo.Create(review);
+            _unitOfWork.Save();
+
+            return reviewId;
         }
         public bool EditReviewComment(int userId, int reviewId, string comment)
         {
@@ -173,6 +171,8 @@ namespace HW12.Services
 
             review.Comment = comment;
             _reviewRepo.Update(review);
+            _unitOfWork.Save();
+
 
             return true;
         }
@@ -184,6 +184,7 @@ namespace HW12.Services
                 throw new Exception("You can only delete your own reviews!");
 
             _reviewRepo.Delete(reviewId);
+            _unitOfWork.Save();
 
             return true;
         }

@@ -10,14 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HW12.Infrastructure.Repositories
 {
-    public class ReviewRepository:IReviewRepository
+    public class ReviewRepository(AppDbContext _dbContext) : IReviewRepository
     {
-        private readonly AppDbContext _dbContext = new();
-
+        
         public int Create(Review review)
         {
             _dbContext.Reviews.Add(review);
-            _dbContext.SaveChanges();
+            
 
             return review.Id;
         }
@@ -48,7 +47,7 @@ namespace HW12.Infrastructure.Repositories
             model.Comment = review.Comment;
             model.CreatedAt = review.CreatedAt;
             model.Rating = review.Rating;
-            _dbContext.SaveChanges();
+            
         }
 
         public void Delete(int id)
@@ -56,7 +55,7 @@ namespace HW12.Infrastructure.Repositories
             var model = GetById(id);
 
             _dbContext.Reviews.Remove(model);
-            _dbContext.SaveChanges();
+            
         }
     }
 }

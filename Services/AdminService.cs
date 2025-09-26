@@ -5,19 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using HW12.DTO;
 using HW12.Entities;
+using HW12.Infrastructure;
 using HW12.Infrastructure.Repositories;
 using HW12.Interfaces.Repositories;
 using HW12.Interfaces.Services;
 
 namespace HW12.Services
 {
-    public class AdminService(IUserRepository userRepo, IBorrowedBookRepository borrowedBookRepo, IBookRepository bookRepo, ICategoryRepository categoryRepo,IReviewRepository reviewRepo):IAdminService
+    public class AdminService(IUserRepository _userRepo, IBorrowedBookRepository _borrowedBookRepo, IBookRepository _bookRepo, ICategoryRepository _categoryRepo,IReviewRepository _reviewRepo,UnitOfWork _unitOfWork):IAdminService
     {
-        private readonly IUserRepository _userRepo = userRepo;
-        private readonly IBorrowedBookRepository _borrowedBookRepo = borrowedBookRepo;
-        private readonly IBookRepository _bookRepo = bookRepo;
-        private readonly ICategoryRepository _categoryRepo = categoryRepo;
-        private readonly IReviewRepository _reviewRepo = reviewRepo;
+        
 
         public ShowUserDto ShowProfile(int userId)
         {
@@ -113,6 +110,7 @@ namespace HW12.Services
             return _reviewRepo.GetAll()
                 .Select(r => new ShowReviewDto()
                 {
+                    ReviewId = r.Id,
                     UserId = r.UserId,
                     UserFullName = r.User.FirstName + " " + r.User.LastName,
                     BookId = r.BookId,
@@ -131,6 +129,7 @@ namespace HW12.Services
             
             user.IsActive = true;
             _userRepo.Update(user);
+            _unitOfWork.Save();
             return true;
         }
 
@@ -140,6 +139,7 @@ namespace HW12.Services
             
             user.IsActive = false;
             _userRepo.Update(user);
+            _unitOfWork.Save();
             return true;
         }
 
@@ -153,7 +153,10 @@ namespace HW12.Services
                 Name = name
             };
 
-            return _categoryRepo.Create(category);
+            int categoryId = _categoryRepo.Create(category);
+            _unitOfWork.Save();
+
+            return categoryId;
         }
 
         public int CreateBook(string title, string author, int categoryId)
@@ -177,7 +180,10 @@ namespace HW12.Services
                 IsBorrowed = false
             };
 
-            return _bookRepo.Create(book);
+            int bookId = _bookRepo.Create(book);
+            _unitOfWork.Save();
+
+            return bookId;
         }
 
         public bool ApproveReview(int reviewId)
@@ -186,6 +192,8 @@ namespace HW12.Services
 
             review.IsApproved = true;
             _reviewRepo.Update(review);
+            _unitOfWork.Save();
+
             return true;
         }
 
@@ -195,6 +203,8 @@ namespace HW12.Services
 
             review.IsApproved = false;
             _reviewRepo.Update(review);
+            _unitOfWork.Save();
+
             return true;
         }
     }

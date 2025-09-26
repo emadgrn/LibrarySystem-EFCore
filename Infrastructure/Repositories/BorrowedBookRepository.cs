@@ -10,14 +10,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HW12.Infrastructure.Repositories
 {
-    public class BorrowedBookRepository:IBorrowedBookRepository
+    public class BorrowedBookRepository(AppDbContext _dbContext) : IBorrowedBookRepository
     {
-        private readonly AppDbContext _dbContext = new();
+        
 
         public int Create(BorrowedBook borrowedBook)
         {
             _dbContext.BorrowedBooks.Add(borrowedBook);
-            _dbContext.SaveChanges();
+            
 
             return borrowedBook.Id;
         }
@@ -46,7 +46,7 @@ namespace HW12.Infrastructure.Repositories
             var model = GetById(borrowedBook.Id);
 
             model.BorrowingDateTime = borrowedBook.BorrowingDateTime;
-            _dbContext.SaveChanges();
+           
         }
 
         public void Delete(int id)
@@ -54,7 +54,7 @@ namespace HW12.Infrastructure.Repositories
             var model = GetById(id);
 
             _dbContext.BorrowedBooks.Remove(model);
-            _dbContext.SaveChanges();
+            
         }
     }
 }

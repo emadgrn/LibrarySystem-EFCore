@@ -10,14 +10,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HW12.Infrastructure.Repositories
 {
-    public class CategoryRepository : ICategoryRepository
+    public class CategoryRepository(AppDbContext _dbContext) : ICategoryRepository
     {
-        private readonly AppDbContext _dbContext = new();
+        
 
         public int Create(Category category)
         {
             _dbContext.Categories.Add(category);
-            _dbContext.SaveChanges();
+            
 
             return category.Id;
         }
@@ -42,7 +42,7 @@ namespace HW12.Infrastructure.Repositories
             var model = GetById(category.Id); 
 
             model.Name = category.Name;
-            _dbContext.SaveChanges();
+            
         }
 
         public void Delete(int id)
@@ -50,7 +50,7 @@ namespace HW12.Infrastructure.Repositories
             var model = GetById(id); 
 
             _dbContext.Categories.Remove(model);
-            _dbContext.SaveChanges();
+            
         }
     }
 }

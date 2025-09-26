@@ -9,14 +9,11 @@ using HW12.Interfaces.Repositories;
 
 namespace HW12.Infrastructure.Repositories
 {
-    public class UserRepository:IUserRepository
+    public class UserRepository(AppDbContext _dbContext) :IUserRepository
     {
-        private readonly AppDbContext _dbContext = new();
-
         public int Create(User user)
         {
             _dbContext.Users.Add(user);
-            _dbContext.SaveChanges();
 
             return user.Id;
         }
@@ -43,7 +40,7 @@ namespace HW12.Infrastructure.Repositories
             model.FirstName = user.FirstName;
             model.LastName = user.LastName;
             model.IsActive = user.IsActive;
-            _dbContext.SaveChanges();
+            
         }
 
         public void Delete(int id)
@@ -51,7 +48,7 @@ namespace HW12.Infrastructure.Repositories
             var model = GetById(id);
 
             _dbContext.Users.Remove(model);
-            _dbContext.SaveChanges();
+           
         }
     }
 }

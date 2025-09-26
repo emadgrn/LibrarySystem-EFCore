@@ -10,15 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HW12.Infrastructure.Repositories
 {
-    public class BookRepository : IBookRepository
+    public class BookRepository(AppDbContext _dbContext) : IBookRepository
     {
-
-        private readonly AppDbContext _dbContext = new();
 
         public int Create(Book book)
         {
             _dbContext.Books.Add(book);
-            _dbContext.SaveChanges();
+            
 
             return book.Id;
         }
@@ -49,7 +47,7 @@ namespace HW12.Infrastructure.Repositories
             model.Title = book.Title;
             model.Author = book.Author;
             model.IsBorrowed = book.IsBorrowed;
-            _dbContext.SaveChanges();
+            
         }
 
         public void Delete(int id)
@@ -57,7 +55,6 @@ namespace HW12.Infrastructure.Repositories
             var model = GetById(id);
 
             _dbContext.Books.Remove(model);
-            _dbContext.SaveChanges();
         }
     }
 

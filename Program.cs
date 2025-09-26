@@ -14,20 +14,24 @@ using HW12.Services;
 using HW12.Validators;
 using Spectre.Console;
 using System.Net;
+using HW12.Infrastructure.DataAccess;
+using HW12.Infrastructure;
 
 namespace HW12
 {
     internal class Program
     {
-        private static readonly IUserRepository _userRepo = new UserRepository();
-        private static readonly IBorrowedBookRepository _borrowedBookRepo = new BorrowedBookRepository();
-        private static readonly IBookRepository _bookRepo = new BookRepository();
-        private static readonly ICategoryRepository _categoryRepo = new CategoryRepository();
-        private static readonly IReviewRepository _reviewRepo = new ReviewRepository();
+        private static readonly AppDbContext _appDbContext = new AppDbContext();
+        private static readonly IUserRepository _userRepo = new UserRepository(_appDbContext);
+        private static readonly UnitOfWork _unitOfWork = new UnitOfWork(_appDbContext);
+        private static readonly IBorrowedBookRepository _borrowedBookRepo = new BorrowedBookRepository(_appDbContext);
+        private static readonly IBookRepository _bookRepo = new BookRepository(_appDbContext);
+        private static readonly ICategoryRepository _categoryRepo = new CategoryRepository(_appDbContext);
+        private static readonly IReviewRepository _reviewRepo = new ReviewRepository(_appDbContext);
         private static readonly IValidator _validate = new Validator(_userRepo);
         private static readonly IAuthentication _auth = new Authentication(_userRepo, _validate);
-        private static readonly IAdminService _adminService = new AdminService(_userRepo, _borrowedBookRepo, _bookRepo, _categoryRepo, _reviewRepo);
-        private static readonly IRegularUserService _regularUserService = new RegularUserService(_userRepo, _borrowedBookRepo, _bookRepo, _categoryRepo, _reviewRepo);
+        private static readonly IAdminService _adminService = new AdminService(_userRepo, _borrowedBookRepo, _bookRepo, _categoryRepo, _reviewRepo, _unitOfWork);
+        private static readonly IRegularUserService _regularUserService = new RegularUserService(_userRepo, _borrowedBookRepo, _bookRepo, _categoryRepo, _reviewRepo, _unitOfWork);
 
         static void Main(string[] args)
         {
@@ -463,9 +467,6 @@ namespace HW12
                             {
                                 Console.Clear();
                                 Console.Write("Enter review Id: ");
-                                Console.Write("Enter comment: ");
-                                string? input = Console.ReadLine();
-                                string? comment = string.IsNullOrWhiteSpace(input) ? null : input;
                                 int reviewId = int.Parse(Console.ReadLine()!);
                                 if (_regularUserService.DeleteReview(LocalStorage.CurrentUser!.Id, reviewId))
                                 {
@@ -635,6 +636,7 @@ namespace HW12
                 .Border(TableBorder.Rounded)
                 .Title("[bold yellow]Reviews[/]");
 
+            table.AddColumn("[darkorange3]Review Id[/]");
             table.AddColumn("[cyan]User Id[/]");
             table.AddColumn("[green]User Name[/]");
             table.AddColumn("[blue]Book Title[/]");
@@ -647,6 +649,7 @@ namespace HW12
                 foreach (var review in reviews)
                 {
                     table.AddRow(
+                        review.ReviewId.ToString(),
                         review.UserId.ToString(),
                         review.UserFullName,
                         review.BookTitle,
